@@ -25,17 +25,19 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Loader2, PlusCircle } from 'lucide-react';
 import { useToast } from '../../hooks/use-toast';
+import * as api from '../../lib/api';
+import { Textarea } from '../ui/textarea'; // Import Textarea component
 
 const formSchema = z.object({
-  title: z.string().min(3, { message: 'Title must be at least 3 characters.' }),
+  title: z.string().min(1, { message: 'Title is required.' }),
+  sqlQuery: z.string().min(1, { message: 'SQL Query is required.' }), // Add sqlQuery to schema
 });
 
-interface AddToDashboardModalProps {
-  data: any;
-  chartType: string | null;
-}
-
-export function AddToDashboardModal({ data, chartType }: AddToDashboardModalProps) {
+export function AddToDashboardModal({
+  sqlQuery: initialSqlQuery, // Rename prop to avoid conflict with form field
+}: {
+  sqlQuery: string;
+}) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -44,26 +46,33 @@ export function AddToDashboardModal({ data, chartType }: AddToDashboardModalProp
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: '',
+      sqlQuery: initialSqlQuery, // Set initial value for sqlQuery
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    // Simulate API call
-    console.log('Saving visualization:', {
-      ...values,
-      sql_query: data.sqlQuery,
-      chartType,
-      data: data.results,
-    });
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
-    setOpen(false);
-    form.reset();
-    toast({
-      title: 'Visualization Saved',
-      description: `"${values.title}" has been added to your dashboard.`,
-    });
+    try {
+      await api.addChartToDashboard({
+        title: values.title,
+        sqlQuery: values.sqlQuery, // Use value from form
+      });
+      toast({
+        title: 'Chart Added',
+        description: 'The chart has been successfully added to your dashboard.',
+      });
+      setOpen(false);
+      form.reset();
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Failed to add chart',
+        description: 'Could not save the chart to the dashboard.',
+      });
+      console.error('Failed to add chart:', error);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -95,10 +104,19 @@ export function AddToDashboardModal({ data, chartType }: AddToDashboardModalProp
                 </FormItem>
               )}
             />
-             <div className="space-y-2 text-sm">
-                <p className="font-medium">SQL Query</p>
-                <p className="rounded-md bg-secondary p-2 font-mono text-xs text-muted-foreground">{data.sqlQuery}</p>
-             </div>
+            <FormField
+              control={form.control}
+              name="sqlQuery"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>SQL Query</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="SELECT * FROM table;" {...field} rows={5} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <DialogFooter>
               <Button type="submit" disabled={isLoading} className="w-full">
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

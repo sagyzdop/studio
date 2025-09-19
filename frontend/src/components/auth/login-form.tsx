@@ -50,10 +50,9 @@ export function LoginForm({ children }: { children: React.ReactNode }) {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000));
     try {
-      await login(values.email, values.password);
+      await login(values.email);
       toast({
         title: 'Login Successful',
         description: 'Welcome back!',

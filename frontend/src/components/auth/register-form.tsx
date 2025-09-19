@@ -55,7 +55,7 @@ export function RegisterForm({ children }: { children: React.ReactNode }) {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000));
     try {
-      register(values.fullName, values.email);
+      register(values.fullName);
       toast({
         title: 'Registration Successful',
         description: "You're now logged in.",

@@ -23,12 +23,9 @@ class TokenData(BaseModel):
 class ChartBase(BaseModel):
     title: str
     sqlQuery: str
-    chartType: str
 
 class ChartCreate(ChartBase):
-    data: List[Any]
+    pass
 
 class Chart(ChartBase):
     id: str
-    userId: str
-    createdAt: datetime

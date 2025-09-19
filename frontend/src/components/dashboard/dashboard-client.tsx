@@ -16,7 +16,7 @@ export function DashboardClient() {
   // Use SWR to fetch, cache, and revalidate dashboard charts
   const { data: visualizations, error, isLoading, mutate } = useSWR(
     '/api/dashboard/charts', // The key is the API endpoint
-    api.getDashboardCharts    // The fetcher function
+    api.fetchDashboardCharts    // The fetcher function
   );
 
   const { toast } = useToast();
@@ -64,7 +64,7 @@ export function DashboardClient() {
                   </CardContent>
                 </Card>
               ))
-            : visualizations?.map((vis) => (
+            : visualizations?.data.map((vis) => (
                 <ChartCard key={vis.id} visualization={vis} />
               ))}
           

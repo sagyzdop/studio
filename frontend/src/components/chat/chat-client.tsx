@@ -1,29 +1,71 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { ChartDisplay } from './chart-display';
-
-// This is a mock of the data structure that might come from the WebSocket
-const MOCK_DATA_FROM_WS = {
-  sqlQuery:
-    "SELECT department, COUNT(*) as employee_count FROM employees GROUP BY department ORDER BY employee_count DESC;",
-  results: [
-    { department: 'Engineering', employee_count: 75 },
-    { department: 'Sales', employee_count: 52 },
-    { department: 'Marketing', employee_count: 34 },
-    { department: 'HR', employee_count: 12 },
-  ],
-};
+import { useEffect, useState } from "react";
+import { ChartDisplay } from "./chart-display";
 
 export function ChatClient() {
   const [data, setData] = useState<any | null>(null);
+  const [wsStatus, setWsStatus] = useState("Connecting to server...");
 
-  // Simulate receiving WebSocket data.
-  // In a real app, this would be inside a useEffect hook with a WebSocket connection.
-  const simulateWebSocketMessage = () => {
-    setData(MOCK_DATA_FROM_WS);
-  };
-  
+  useEffect(() => {
+    const wsUrl = "wss://09796931f0c4.ngrok-free.app/ws"; // Replace with your ngrok WebSocket URL
+
+    let socket: WebSocket | null = null;
+    let reconnectTimeout: NodeJS.Timeout | null = null;
+
+    const connectWebSocket = () => {
+      socket = new WebSocket(wsUrl);
+
+      socket.onopen = () => {
+        console.log("WebSocket connection established.");
+        setWsStatus("Connected to Live Feed");
+        // You might want to update a visual status here if needed
+      };
+
+      socket.onmessage = (event) => {
+        console.log("Data received from server.");
+        try {
+          const parsedData = JSON.parse(event.data);
+          // Assuming the data from WebSocket is directly chartable results
+          setData({
+            results: parsedData.results,
+            sqlQuery: parsedData.sql_query,
+          });
+        } catch (e) {
+          console.error("Failed to parse incoming JSON:", e);
+        }
+      };
+
+      socket.onclose = () => {
+        console.log(
+          "WebSocket connection closed. Reconnecting in 3 seconds..."
+        );
+        setWsStatus("Connection Lost. Retrying...");
+        if (reconnectTimeout) clearTimeout(reconnectTimeout);
+        reconnectTimeout = setTimeout(connectWebSocket, 3000); // Attempt to reconnect
+      };
+
+      socket.onerror = (error) => {
+        console.error("WebSocket error:", error);
+        setWsStatus("Connection Error");
+        if (socket) {
+          socket.close(); // Close the socket to trigger onclose and reconnect
+        }
+      };
+    };
+
+    connectWebSocket();
+
+    return () => {
+      if (socket) {
+        socket.close();
+      }
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
+    };
+  }, []); // Empty dependency array means this effect runs once on mount and clean up on unmount
+
   return (
     <div className="flex flex-col h-full">
       <header className="sticky top-0 z-10 flex h-16 items-center border-b bg-background/80 px-6 backdrop-blur-sm">
@@ -32,8 +74,10 @@ export function ChatClient() {
       <div className="flex-1 grid md:grid-cols-2 gap-6 p-6 overflow-hidden">
         <div className="flex flex-col gap-4 overflow-hidden">
           <h2 className="text-lg font-semibold">Data Visualization</h2>
-          <div className="flex-1 rounded-lg border bg-card p-4 overflow-auto">
-            <ChartDisplay data={data} onSimulate={simulateWebSocketMessage} />
+          <div className="flex-1 rounded-lg border bg-card p-4 overflow-auto relative">
+            {" "}
+            {/* Added relative class here */}
+            <ChartDisplay data={data} wsStatus={wsStatus} />
           </div>
         </div>
         <div className="flex flex-col gap-4 overflow-hidden">
@@ -41,7 +85,8 @@ export function ChatClient() {
           <div className="flex-1 rounded-lg border overflow-hidden">
             <iframe
               src="http://hackathon.shai.pro/chatbot/uCPYEHCID0iKkPpt"
-              className="w-full h-full border-0"
+              className="w-full h-full border-0 min-h-[700px]"
+              style={{ minHeight: '700px' }} // Add min-height to prevent overflow
               title="Chatbot"
             ></iframe>
           </div>

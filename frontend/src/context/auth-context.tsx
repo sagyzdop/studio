@@ -1,16 +1,15 @@
 'use client';
 
 import type { User } from '../lib/types';
-import * as api from '../lib/api';
 import React, { createContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string) => Promise<void>;
   logout: () => void;
-  register: (email: string, password: string) => Promise<void>;
+  register: (email: string) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,43 +19,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  useEffect(() => {
+    // Check for a mock user in local storage
+    const storedUser = localStorage.getItem('mockUser');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    setLoading(false);
+  }, []);
+
+  const login = useCallback(async (email: string) => {
+    setLoading(true);
+    // Mock user creation based on email
+    const mockUser: User = {
+      id: 'mock-user-id',
+      email: email,
+      fullName: email.split('@')[0],
+      role: email.includes('admin') ? 'admin' : 'user',
+    };
+    
+    localStorage.setItem('mockUser', JSON.stringify(mockUser));
+    setUser(mockUser);
+    setLoading(false);
+    router.push('/dashboard');
+  }, [router]);
+
+  const register = useCallback(async (email: string) => {
+    // In a mock setup, register can just log the user in.
+    await login(email);
+  }, [login]);
+
   const logout = useCallback(() => {
-    localStorage.removeItem('authToken');
+    localStorage.removeItem('mockUser');
     setUser(null);
     router.push('/login');
   }, [router]);
-
-  const fetchUser = useCallback(async () => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      try {
-        const response = await api.fetchCurrentUser();
-        setUser(response.data);
-      } catch (error) {
-        console.error('Failed to fetch user, token might be expired.', error);
-        logout(); // Log out if the token is invalid
-      }
-    }
-    setLoading(false);
-  }, [logout]);
-
-  useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
-
-  const login = async (email: string, password: string) => {
-    setLoading(true);
-    const response = await api.loginUser(email, password);
-    localStorage.setItem('authToken', response.data.access_token);
-    await fetchUser(); // Fetch user details after getting the token
-  };
-
-  const register = async (email: string, password: string) => {
-    setLoading(true);
-    // You might want to get the full name from the form in a real app
-    await api.registerUser(email, password);
-    await login(email, password); // Automatically log in after registration
-  };
 
   return (
     <AuthContext.Provider value={{ user, loading, login, logout, register }}>
@@ -64,4 +61,3 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     </AuthContext.Provider>
   );
 };
-

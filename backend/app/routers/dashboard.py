@@ -1,26 +1,39 @@
-from fastapi import APIRouter, Depends, HTTPException
-from typing import List, Annotated
+from fastapi import APIRouter, HTTPException
+from typing import List, Any
 import uuid
-from datetime import datetime, timezone
 
 from .. import schemas
-from .auth import get_current_user
 from ..database import execute_d1_query
 
-router = APIRouter(prefix="/api/dashboard", tags=["Dashboard"], dependencies=[Depends(get_current_user)])
+router = APIRouter(prefix="/api/dashboard", tags=["Dashboard"])
 
 @router.get("/charts", response_model=List[schemas.Chart])
-async def get_dashboard_charts(current_user: Annotated[schemas.User, Depends(get_current_user)]):
-    user_id = current_user['id']
-    return await execute_d1_query("SELECT * FROM charts WHERE userId = ?1", [user_id])
+async def get_dashboard_charts():
+    return await execute_d1_query("SELECT id, title, sqlQuery FROM charts")
 
 @router.post("/charts", response_model=schemas.Chart, status_code=201)
-async def add_chart_to_dashboard(chart_data: schemas.ChartCreate, current_user: Annotated[schemas.User, Depends(get_current_user)]):
-    chart_id = str(uuid.uuid4())
-    created_at = datetime.now(timezone.utc)
+async def add_chart_to_dashboard(chart_data: schemas.ChartCreate):
+    import random
+    chart_id = random.randint(1000, 9999)
     
     await execute_d1_query(
-        "INSERT INTO charts (id, userId, title, sqlQuery, chartType, createdAt) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
-        [chart_id, current_user['id'], chart_data.title, chart_data.sqlQuery, chart_data.chartType, created_at.isoformat()]
+        "INSERT INTO charts (id, title, sqlQuery) VALUES (?1, ?2, ?3)",
+        [chart_id, chart_data.title, chart_data.sqlQuery]
     )
-    return {**chart_data.dict(), "id": chart_id, "userId": current_user['id'], "createdAt": created_at}
+    return {**chart_data.dict(), "id": chart_id}
+
+@router.get("/charts/{chart_id}/data", response_model=List[Any])
+async def get_chart_data(chart_id: int):
+    chart_query_result = await execute_d1_query(
+        "SELECT sqlQuery FROM charts WHERE id = ?1", [chart_id]
+    )
+    if not chart_query_result:
+        raise HTTPException(status_code=404, detail="Chart not found")
+
+    sql_query = chart_query_result[0]['sqlQuery']
+
+    try:
+        chart_data = await execute_d1_query(sql_query)
+        return chart_data
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error executing chart query: {str(e)}")

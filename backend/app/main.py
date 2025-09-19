@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import auth, dashboard, ai
+from .routers import dashboard, ai
 
 import json
 
@@ -20,7 +20,6 @@ app.add_middleware(
 )
 
 # Include API routers
-app.include_router(auth.router)
 app.include_router(dashboard.router)
 app.include_router(websocket_router)
 
