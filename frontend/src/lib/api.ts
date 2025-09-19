@@ -25,3 +25,7 @@ export const fetchChartData = async (chartId: number): Promise<any[]> => {
   const response = await apiClient.get(`/api/dashboard/charts/${chartId}/data`);
   return response.data;
 };
+
+export const deleteChart = async (chartId: number): Promise<void> => {
+  await apiClient.delete(`/api/dashboard/charts/${chartId}`);
+};

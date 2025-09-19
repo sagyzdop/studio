@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { LoginForm } from '../../components/auth/login-form';
-import { RegisterForm } from '../../components/auth/register-form';
-import { Logo } from '../../components/layout/logo';
-import { Button } from '../../components/ui/button';
-import { useAuth } from '../../hooks/use-auth';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { LoginForm } from "../../components/auth/login-form";
+import { RegisterForm } from "../../components/auth/register-form";
+import { Logo } from "../../components/layout/logo";
+import { Button } from "../../components/ui/button";
+import { useAuth } from "../../hooks/use-auth";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function LoginPage() {
   const { user } = useAuth();
@@ -14,7 +14,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user) {
-      router.push('/dashboard');
+      router.push("/dashboard");
     }
   }, [user, router]);
 
@@ -25,7 +25,7 @@ export default function LoginPage() {
           <Logo />
         </div>
         <h1 className="text-4xl font-bold text-foreground font-headline">
-          Corporate Data Lens
+          Zhurek App
         </h1>
         <p className="mt-2 text-muted-foreground">
           Unlock insights from your corporate data with natural language.
@@ -43,7 +43,8 @@ export default function LoginPage() {
           </RegisterForm>
         </div>
         <p className="mt-8 text-xs text-muted-foreground">
-          For demo purposes, use any email. Use an email containing 'admin' for admin role.
+          For demo purposes, use any email. Use an email containing 'admin' for
+          admin role.
         </p>
       </div>
     </div>

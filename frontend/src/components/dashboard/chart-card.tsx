@@ -7,7 +7,7 @@ import {
   LinearScale,
   BarElement,
   Title,
-  Tooltip,
+  Tooltip as ChartJSTooltip, // Alias Tooltip from chart.js
   Legend,
   BarController,
 } from "chart.js";
@@ -20,32 +20,43 @@ import {
   CardTitle,
 } from "../ui/card";
 import { Button } from "../ui/button";
-import { Share2 } from "lucide-react";
+import { Download, Copy, Check, Trash } from "lucide-react"; // Import 'Copy' instead of 'CopyToClipboard'
 import { useEffect, useRef } from "react";
 import { downloadImage } from "../../lib/utils";
 import { useToast } from "../../hooks/use-toast";
 import { Chart } from "../../lib/types";
 import * as api from "../../lib/api";
+import { useState } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
+import { copyToClipboard } from "../../lib/utils";
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
   BarElement,
   Title,
-  Tooltip,
+  ChartJSTooltip, // Use the aliased Tooltip here
   Legend,
   BarController
 );
 
 interface ChartCardProps {
   visualization: Chart;
+  onDelete: (chartId: number) => void;
 }
 
-export function ChartCard({ visualization }: ChartCardProps) {
+export function ChartCard({ visualization, onDelete }: ChartCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const chartInstanceRef = useRef<ChartJS | null>(null);
   const { toast } = useToast();
+  const [isCopied, setIsCopied] = useState(false);
+  const [tooltipOpen, setTooltipOpen] = useState(false);
 
   const {
     data: chartData,
@@ -158,13 +169,74 @@ export function ChartCard({ visualization }: ChartCardProps) {
     );
   };
 
+  const handleCopy = async () => {
+    const success = await copyToClipboard(visualization.sqlQuery);
+    if (success) {
+      setIsCopied(true);
+      toast({
+        title: "SQL Query Copied!",
+        description: "The SQL query has been copied to your clipboard.",
+      });
+      setTimeout(() => {
+        setIsCopied(false);
+        setTooltipOpen(false);
+      }, 2000);
+    } else {
+      toast({
+        title: "Copy Failed",
+        description: "Could not copy SQL query to clipboard.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await api.deleteChart(visualization.chart_id);
+      toast({
+        title: "Chart Deleted!",
+        description: "The chart has been successfully removed.",
+      });
+      onDelete(visualization.chart_id); // Notify parent component of deletion
+    } catch (err) {
+      toast({
+        title: "Deletion Failed",
+        description: "Could not delete the chart. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Card ref={cardRef} className="flex flex-col">
       <CardHeader>
         <CardTitle>{visualization.title}</CardTitle>
-        <CardDescription className="truncate text-xs">
-          {visualization.sqlQuery}
-        </CardDescription>
+        <div className="flex items-center gap-2">
+          <CardDescription className="truncate text-xs flex-1">
+            {visualization.sqlQuery}
+          </CardDescription>
+          <TooltipProvider>
+            <Tooltip open={tooltipOpen} onOpenChange={setTooltipOpen}>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={handleCopy}
+                >
+                  {isCopied ? (
+                    <Check className="h-3 w-3 text-green-500" />
+                  ) : (
+                    <Copy className="h-3 w-3" /> // Use the 'Copy' icon
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{isCopied ? "Copied!" : "Copy SQL"}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
       </CardHeader>
       <CardContent className="flex-1 relative h-48">
         {isLoading && <div className="text-center">Loading chart data...</div>}
@@ -182,8 +254,12 @@ export function ChartCard({ visualization }: ChartCardProps) {
       </CardContent>
       <CardFooter className="justify-end">
         <Button variant="ghost" size="sm" onClick={handleShare}>
-          <Share2 className="mr-2 h-4 w-4" />
-          Share
+          <Download className="mr-2 h-4 w-4" />
+          Download
+        </Button>
+        <Button variant="ghost" size="sm" onClick={handleDelete}>
+          <Trash className="mr-2 h-4 w-4 text-red-500" />
+          Delete
         </Button>
       </CardFooter>
     </Card>

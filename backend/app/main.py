@@ -7,7 +7,7 @@ import json
 from .websockets import manager, websocket_router
 from .routers import auth, dashboard
 
-app = FastAPI(title="Corporate Data Lens API")
+app = FastAPI(title="Zhurek App")
 app.include_router(ai.router)
 
 # CORS Middleware
@@ -25,4 +25,4 @@ app.include_router(dashboard.router)
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the Corporate Data Lens API"}
+    return {"message": "Welcome to the Zhurek App API"}

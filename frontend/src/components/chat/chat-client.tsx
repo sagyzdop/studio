@@ -11,7 +11,7 @@ export function ChatClient() {
     useState(false);
 
   useEffect(() => {
-    const wsUrl = "wss://845ad840422c.ngrok-free.app/ws"; // Replace with your ngrok WebSocket URL
+    const wsUrl = "wss://55a68d3b8c1b.ngrok-free.app/ws"; // Use environment variable for WebSocket URL
 
     let socket: WebSocket | null = null;
     let reconnectTimeout: NodeJS.Timeout | null = null;

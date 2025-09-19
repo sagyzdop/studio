@@ -87,67 +87,24 @@ The system converts user queries into SQL, executes them against a **Cloudflare 
 
 Cloudflare D1 tables required:
 
-image1
+![zhurek_stationery.png](./assets/zhurek_stationery.png)
 
 ## Running Locally
 
-### 1. Clone Repository
-
 ```bash
-git clone <repo_url>
+git clone https://github.com/sagyzdop/studio.git
 cd hackathon-app
-```
-
-### 2. Backend (FastAPI)
-
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # on Windows: venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn main:app --reload
-```
-
-Backend runs at: `http://localhost:8000`
-
-### 3. Frontend (Next.js)
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Frontend runs at: `http://localhost:3000`
-
----
-
-## Cloudflare D1 Integration
-
-To execute queries against Cloudflare D1, use the official API:
-
-```python
-import requests
-
-ACCOUNT_ID = "<your_account_id>"
-DB_ID = "<your_db_id>"
-API_TOKEN = "<your_api_token>"
-
-def run_query(sql: str):
-    url = f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/d1/database/{DB_ID}/query"
-    headers = {"Authorization": f"Bearer {API_TOKEN}"}
-    response = requests.post(url, headers=headers, json={"sql": sql})
-    return response.json()
+docker compose up -d
 ```
 
 ---
 
 ## Team
 
-* 👨‍💻 Developer 1 – Frontend
-* 👨‍💻 Developer 2 – AI Engineer
-* 👨‍💻 Developer 3 – AI Engineer
-* 👨‍💻 Developer 4 – Data Engineer
+* 👨‍💻 Bakhtiyar – Backend & Frontend
+* 👨‍💻 Arlan 2 – AI Engineer
+* 👨‍💻 Bekzat 3 – AI Engineer
+* 👨‍💻 Miras 4 – Data Engineer
 
 ---
 

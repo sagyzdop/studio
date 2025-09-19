@@ -37,3 +37,16 @@ async def get_chart_data(chart_id: int):
         return chart_data
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error executing chart query: {str(e)}")
+    
+@router.delete("/charts/{chart_id}", status_code=204)
+async def delete_chart_from_dashboard(chart_id: int):
+    # First, check if the chart exists
+    existing_chart = await execute_d1_query(
+        "SELECT chart_id FROM charts WHERE chart_id = ?1", [chart_id]
+    )
+    if not existing_chart:
+        raise HTTPException(status_code=404, detail="Chart not found")
+
+    # If it exists, proceed with deletion
+    await execute_d1_query("DELETE FROM charts WHERE chart_id = ?1", [chart_id])
+    return

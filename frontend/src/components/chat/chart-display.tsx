@@ -3,7 +3,7 @@
 import { Button } from "../ui/button";
 import { useToast } from "../../hooks/use-toast";
 import { downloadImage } from "../../lib/utils";
-import { Bot, Loader2, PlusCircle, Share2 } from "lucide-react";
+import { Bot, Loader2, PlusCircle, Download } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
 import {
   Bar,
@@ -192,7 +192,7 @@ export function ChartDisplay({ data, wsStatus }: ChartDisplayProps) {
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <Bot className="mx-auto h-12 w-12 text-muted-foreground" />
-            <h3 className="mt-4 text-lg font-semibold">Start a conversation</h3>
+            <h3 className="mt-4 text-lg font-semibold">Start a conversation to get a visualization</h3>
             <p className="mt-2 text-sm text-muted-foreground">{wsStatus}</p>
           </div>
         </div>
@@ -204,7 +204,7 @@ export function ChartDisplay({ data, wsStatus }: ChartDisplayProps) {
           </div>
           <div className="flex items-center justify-end gap-2 p-4 border-t">
             <Button variant="outline" onClick={handleShare}>
-              <Share2 className="mr-2 h-4 w-4" /> Share
+              <Download className="mr-2 h-4 w-4" /> Download
             </Button>
             <Dialog open={isAddToDashboardModalOpen} onOpenChange={setIsAddToDashboardModalOpen}>
               <DialogTrigger asChild>

@@ -43,13 +43,13 @@ export default function KnowledgePage() {
           </p>
         </div>
         <div className="flex flex-col gap-4 overflow-hidden">
-          <h2 className="text-lg font-semibold">File handler</h2>{" "}
+          <h2 className="text-lg font-semibold">Metadata Generator</h2>{" "}
           {/* Added heading */}
           <div className="flex-1 rounded-lg border overflow-hidden">
             <iframe
               src="http://hackathon.shai.pro/chatbot/WUDPquW9ptNLmZmx"
               className="w-full h-full border-0 min-h-[700px]" // Updated className for consistency
-              title="File handler" // Added title
+              title="File handler" 
               allow="microphone"
             ></iframe>
           </div>

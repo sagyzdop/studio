@@ -19,3 +19,13 @@ export const downloadImage = (element: HTMLElement | null, filename: string) => 
       console.error('oops, something went wrong!', err);
     });
 };
+
+export const copyToClipboard = async (text: string) => {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (err) {
+    console.error('Failed to copy text: ', err);
+    return false;
+  }
+};

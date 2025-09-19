@@ -2,7 +2,6 @@
 
 import useSWR from "swr";
 import { useRef, useState } from "react";
-import Link from "next/link";
 import { Download, PlusCircle, RefreshCw } from "lucide-react";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
@@ -92,7 +91,20 @@ export function DashboardClient() {
                 </Card>
               ))
             : visualizations?.data.map((vis) => (
-                <ChartCard key={vis.chart_id} visualization={vis} />
+                <ChartCard
+                  key={vis.chart_id}
+                  visualization={vis}
+                  onDelete={(deletedChartId) => {
+                    mutate(
+                      {
+                        data: visualizations?.data.filter(
+                          (chart) => chart.chart_id !== deletedChartId
+                        ),
+                      },
+                      false
+                    );
+                  }}
+                />
               ))}
 
           <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>

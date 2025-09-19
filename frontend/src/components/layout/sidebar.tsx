@@ -35,7 +35,7 @@ function NavContent() {
           className="flex items-center gap-2 font-semibold"
         >
           <Logo />
-          <span className="font-headline">Corporate Data Lens</span>
+          <span className="font-headline">Zhurek App</span>
         </Link>
       </div>
       <div className="flex-1 overflow-auto py-4">
