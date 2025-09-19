@@ -12,7 +12,7 @@ export type SavedVisualization = {
 };
 
 export interface Chart {
-  id: number;
+  chart_id: number;
   title: string;
   sqlQuery: string;
 }

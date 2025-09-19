@@ -3,8 +3,8 @@
 import { Button } from "../ui/button";
 import { useToast } from "../../hooks/use-toast";
 import { downloadImage } from "../../lib/utils";
-import { Bot, Loader2, Share2} from "lucide-react";
-import { useRef, useState } from "react";
+import { Bot, Loader2, PlusCircle, Share2 } from "lucide-react";
+import { useRef, useState, useEffect } from "react";
 import {
   Bar,
   BarChart,
@@ -21,6 +21,7 @@ import {
   YAxis,
 } from "recharts";
 import { AddToDashboardModal } from "./add-to-dashboard-modal";
+import { Dialog, DialogTrigger } from "../ui/dialog"; // Import Dialog and DialogTrigger
 
 interface ChartDisplayProps {
   data: any | null;
@@ -34,6 +35,17 @@ export function ChartDisplay({ data, wsStatus }: ChartDisplayProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const chartRef = useRef<HTMLDivElement>(null);
+  const [isAddToDashboardModalOpen, setIsAddToDashboardModalOpen] = useState(false); // Add state for modal
+
+  // Effect to set a default chart type when data is available
+  useEffect(() => {
+    if (data && data.results && data.results.length > 0) {
+      setChartType("bar"); // Default to bar chart when data is received
+    } else {
+      setChartType(null); // Reset chart type if no data
+    }
+  }, [data]);
+
 
   const handleShare = () => {
     toast({
@@ -176,15 +188,12 @@ export function ChartDisplay({ data, wsStatus }: ChartDisplayProps) {
 
   return (
     <div className="flex flex-col h-full items-center justify-center">
-        {!data && (
+      {!data && (
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <Bot className="mx-auto h-12 w-12 text-muted-foreground" />
             <h3 className="mt-4 text-lg font-semibold">Start a conversation</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {wsStatus}
-            </p>
-            {/* Removed the simulate button */}
+            <p className="mt-2 text-sm text-muted-foreground">{wsStatus}</p>
           </div>
         </div>
       )}
@@ -194,10 +203,21 @@ export function ChartDisplay({ data, wsStatus }: ChartDisplayProps) {
             {renderChart()}
           </div>
           <div className="flex items-center justify-end gap-2 p-4 border-t">
-            <AddToDashboardModal sqlQuery={data.sql} />
             <Button variant="outline" onClick={handleShare}>
               <Share2 className="mr-2 h-4 w-4" /> Share
             </Button>
+            <Dialog open={isAddToDashboardModalOpen} onOpenChange={setIsAddToDashboardModalOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <PlusCircle className="mr-2 h-4 w-4" /> Add to Dashboard
+                </Button>
+              </DialogTrigger>
+              <AddToDashboardModal
+                sqlQuery={data?.sqlQuery || ""}
+                open={isAddToDashboardModalOpen}
+                setOpen={setIsAddToDashboardModalOpen}
+              />
+            </Dialog>
           </div>
         </div>
       )}

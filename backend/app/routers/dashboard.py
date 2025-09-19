@@ -9,7 +9,7 @@ router = APIRouter(prefix="/api/dashboard", tags=["Dashboard"])
 
 @router.get("/charts", response_model=List[schemas.Chart])
 async def get_dashboard_charts():
-    return await execute_d1_query("SELECT id, title, sqlQuery FROM charts")
+    return await execute_d1_query("SELECT chart_id, title, sqlQuery FROM charts")
 
 @router.post("/charts", response_model=schemas.Chart, status_code=201)
 async def add_chart_to_dashboard(chart_data: schemas.ChartCreate):
@@ -17,15 +17,15 @@ async def add_chart_to_dashboard(chart_data: schemas.ChartCreate):
     chart_id = random.randint(1000, 9999)
     
     await execute_d1_query(
-        "INSERT INTO charts (id, title, sqlQuery) VALUES (?1, ?2, ?3)",
+        "INSERT INTO charts (chart_id, title, sqlQuery) VALUES (?1, ?2, ?3)",
         [chart_id, chart_data.title, chart_data.sqlQuery]
     )
-    return {**chart_data.dict(), "id": chart_id}
+    return {**chart_data.dict(), "chart_id": chart_id}
 
 @router.get("/charts/{chart_id}/data", response_model=List[Any])
 async def get_chart_data(chart_id: int):
     chart_query_result = await execute_d1_query(
-        "SELECT sqlQuery FROM charts WHERE id = ?1", [chart_id]
+        "SELECT sqlQuery FROM charts WHERE chart_id = ?1", [chart_id]
     )
     if not chart_query_result:
         raise HTTPException(status_code=404, detail="Chart not found")

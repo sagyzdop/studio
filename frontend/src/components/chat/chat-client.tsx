@@ -2,13 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { ChartDisplay } from "./chart-display";
+import { AddToDashboardModal } from "./add-to-dashboard-modal";
 
 export function ChatClient() {
   const [data, setData] = useState<any | null>(null);
   const [wsStatus, setWsStatus] = useState("Connecting to server...");
+  const [isAddToDashboardModalOpen, setIsAddToDashboardModalOpen] =
+    useState(false);
 
   useEffect(() => {
-    const wsUrl = "wss://09796931f0c4.ngrok-free.app/ws"; // Replace with your ngrok WebSocket URL
+    const wsUrl = "wss://845ad840422c.ngrok-free.app/ws"; // Replace with your ngrok WebSocket URL
 
     let socket: WebSocket | null = null;
     let reconnectTimeout: NodeJS.Timeout | null = null;
@@ -19,14 +22,13 @@ export function ChatClient() {
       socket.onopen = () => {
         console.log("WebSocket connection established.");
         setWsStatus("Connected to Live Feed");
-        // You might want to update a visual status here if needed
       };
 
       socket.onmessage = (event) => {
         console.log("Data received from server.");
         try {
           const parsedData = JSON.parse(event.data);
-          // Assuming the data from WebSocket is directly chartable results
+
           setData({
             results: parsedData.results,
             sqlQuery: parsedData.sql_query,
@@ -73,7 +75,9 @@ export function ChatClient() {
       </header>
       <div className="flex-1 grid md:grid-cols-2 gap-6 p-6 overflow-hidden">
         <div className="flex flex-col gap-4 overflow-hidden">
-          <h2 className="text-lg font-semibold">Data Visualization</h2>
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold">Data Visualization</h2>
+          </div>
           <div className="flex-1 rounded-lg border bg-card p-4 overflow-auto relative">
             {" "}
             {/* Added relative class here */}
@@ -84,14 +88,19 @@ export function ChatClient() {
           <h2 className="text-lg font-semibold">Chatbot</h2>
           <div className="flex-1 rounded-lg border overflow-hidden">
             <iframe
+              id="chatbot-iframe"
               src="http://hackathon.shai.pro/chatbot/uCPYEHCID0iKkPpt"
-              className="w-full h-full border-0 min-h-[700px]"
-              style={{ minHeight: '700px' }} // Add min-height to prevent overflow
-              title="Chatbot"
+              className="w-full h-full min-h-[700px]"
+              allow="microphone"
             ></iframe>
           </div>
         </div>
       </div>
+      <AddToDashboardModal
+        sqlQuery={data?.sqlQuery || ""}
+        open={isAddToDashboardModalOpen}
+        setOpen={setIsAddToDashboardModalOpen}
+      />
     </div>
   );
 }

@@ -21,20 +21,6 @@ app.add_middleware(
 
 # Include API routers
 app.include_router(dashboard.router)
-app.include_router(websocket_router)
-
-
-@app.post("/api/chatbot-response")
-async def receive_chatbot_response(request: Request):
-    """
-    Webhook to receive data from the AI chatbot and broadcast it.
-    """
-    try:
-        data = await request.json()
-        await manager.broadcast(json.dumps(data))
-        return {"status": "data received and broadcasted"}
-    except json.JSONDecodeError:
-        return {"status": "error", "message": "Invalid JSON"}, 400
 
 
 @app.get("/")

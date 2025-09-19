@@ -9,6 +9,7 @@ import {
   Title,
   Tooltip,
   Legend,
+  BarController,
 } from "chart.js";
 import {
   Card,
@@ -32,7 +33,8 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  BarController
 );
 
 interface ChartCardProps {
@@ -49,8 +51,8 @@ export function ChartCard({ visualization }: ChartCardProps) {
     data: chartData,
     error,
     isLoading,
-  } = useSWR(`/api/charts/${visualization.id}/data`, () =>
-    api.fetchChartData(visualization.id)
+  } = useSWR(`/api/charts/${visualization.chart_id}/data`, () =>
+    api.fetchChartData(visualization.chart_id)
   );
 
   useEffect(() => {
@@ -79,6 +81,7 @@ export function ChartCard({ visualization }: ChartCardProps) {
       return;
     }
 
+    // Default to a bar chart, similar to test.html
     const data = {
       labels: chartData.map((d) => d[categoryKey]),
       datasets: [
@@ -86,6 +89,9 @@ export function ChartCard({ visualization }: ChartCardProps) {
           label: visualization.title,
           data: chartData.map((d) => d[valueKey]),
           backgroundColor: "hsl(var(--primary))",
+          borderColor: "hsl(var(--primary))",
+          borderWidth: 1,
+          borderRadius: 4,
         },
       ],
     };
@@ -93,15 +99,33 @@ export function ChartCard({ visualization }: ChartCardProps) {
     const options = {
       responsive: true,
       maintainAspectRatio: false,
+      indexAxis: "y" as const, // Makes the bar chart horizontal as in test.html
       plugins: {
         legend: {
-          display: false,
+          display: true, // Display legend as in test.html
+          position: "top" as const, // Position legend at top
+          labels: {
+            color: "hsl(var(--muted-foreground))",
+            font: {
+              size: 14,
+            },
+          },
+        },
+        tooltip: {
+          enabled: true,
+          backgroundColor: "hsl(var(--background))",
+          titleColor: "hsl(var(--foreground))",
+          bodyColor: "hsl(var(--muted-foreground))",
+          borderColor: "hsl(var(--border))",
+          borderWidth: 1,
+          padding: 10,
+          cornerRadius: 8,
         },
       },
       scales: {
         x: {
           ticks: { color: "hsl(var(--muted-foreground))" },
-          grid: { display: false },
+          grid: { color: "hsl(var(--border))" },
         },
         y: {
           ticks: { color: "hsl(var(--muted-foreground))" },

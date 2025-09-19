@@ -28,4 +28,4 @@ class ChartCreate(ChartBase):
     pass
 
 class Chart(ChartBase):
-    id: str
+    chart_id: int
